@@ -1,18 +1,14 @@
-# credit_risk_scorecard
-Credit Risk Scorecard built using Python and Logistic Regression.
 # Consumer Credit Risk Scorecard Pipeline
 
 An end-to-end **Probability of Default (PD)** scorecard built using **2.26 million LendingClub loan records** following traditional retail banking methodology.
 
----
 
 ## Executive Summary
 
-This project delivers an end-to-end credit risk scorecard pipeline built on **2.26 million historical loan records** from LendingClub. The objective was to build an interpretable, institutionally rigorous **Probability of Default (PD)** model following the same methodology used by retail banks and NBFCs — **Weight of Evidence (WoE) transformation, logistic regression scoring, and strict Out-of-Time (OOT) validation.**
+This project delivers an end-to-end credit risk scorecard pipeline built on **2.26 million historical loan records** from LendingClub. The objective was to build an interpretable, institutionally rigorous **Probability of Default (PD)** model following the same methodology used by retail banks and NBFCs, **Weight of Evidence (WoE) transformation, logistic regression scoring, and strict Out-of-Time (OOT) validation.**
 
 The pipeline is built entirely **without high-level AutoML or scorecard libraries**. The WoE/IV engine, imputation logic, and scorecard scaling were implemented from scratch, making every modelling decision explicit, transparent, and auditable.
 
----
 
 ## Project Highlights
 
@@ -25,7 +21,6 @@ The pipeline is built entirely **without high-level AutoML or scorecard librarie
 - **Score Range:** 365–621
 - **Final Features:** 29 WoE-transformed variables
 
----
 
 # Key Technical Achievements
 
@@ -40,7 +35,6 @@ Processed **2.26 million** raw loan records on standard consumer hardware using:
 
 The final development dataset retained **1.34 million** clean observations without exceeding memory limitations.
 
----
 
 ## Custom WoE / IV Engine
 
@@ -55,7 +49,6 @@ The feature selection process reduced **150 raw variables** to **29 predictive, 
 
 Variables with **IV > 0.50** (primarily settlement and recovery variables) were correctly identified as **post-default leakage** and removed from model development.
 
----
 
 ## Strict Out-of-Time Validation
 
@@ -66,7 +59,6 @@ Rather than performing a random train-test split, the dataset was divided chrono
 
 This validation strategy closely replicates production deployment, where a model trained on historical applicants scores future applicants while avoiding temporal leakage.
 
----
 
 ## Scorecard Scaling
 
@@ -76,7 +68,6 @@ Logistic regression log-odds were converted into an integer scorecard using the 
 - **Target Score:** 600
 - **Target Odds:** 50:1 (Good : Bad)
 
----
 
 # Methodology
 
@@ -93,7 +84,6 @@ Portfolio default rate:
 
 **19.98%**
 
----
 
 ## Leakage Audit
 
@@ -108,7 +98,6 @@ The following post-origination variables were excluded:
 
 Additionally, LendingClub's own internal credit ratings (`grade` and `sub_grade`) were removed to prevent the scorecard from simply replicating LendingClub's proprietary underwriting model.
 
----
 
 ## Imputation and Standardisation
 
@@ -116,7 +105,6 @@ Missing values were imputed using **training-set medians only**, preventing info
 
 High-cardinality categorical variables (for example, **emp_title** containing over **39,000 unique categories**) were consolidated into the **100 most frequent categories**.
 
----
 
 ## WoE Transformation and Feature Selection
 
@@ -135,7 +123,6 @@ A monotonicity audit was performed on all selected variables.
 - **21 variables** exhibited clear monotonic WoE behaviour.
 - **8 variables** displayed genuine non-linear risk relationships and were retained with documented business justification.
 
----
 
 # Model Performance
 
@@ -153,13 +140,11 @@ The **KS Statistic of 21.92** confirms that the model achieves meaningful separa
 
 For a logistic regression scorecard built exclusively from origination-time variables (without bureau refresh or behavioural variables), this represents an honest, non-leaky baseline consistent with thin-feature retail credit models.
 
----
 
 # Score Distribution
 
 ![Score Distribution](score_distribution.png)
 
----
 
 # Business Output: Score Band Analysis
 
@@ -167,19 +152,16 @@ The scored test portfolio (**Average Score: 493**, **Range: 365–621**) was seg
 
 ![Score Band Table](score_band_table.png)
 
----
 
 # Default Rate by Score Band
 
 ![Default Rate by Score Band](default_rate_vs_score_band.png)
 
----
 
 # Approval Rate vs Portfolio Bad Rate
 
 ![Approval Rate vs Portfolio Bad Rate](approval_rate_vs_portfolio_bad_rate.png)
 
----
 
 ## Business Interpretation
 
@@ -194,7 +176,6 @@ A cutoff score of **515** yields a highly selective approval strategy with a por
 
 Reducing the cutoff to **485** substantially increases approval rates while maintaining acceptable portfolio risk, illustrating the trade-off between business growth and credit quality.
 
----
 
 # Technologies Used
 
@@ -206,7 +187,6 @@ Reducing the cutoff to **485** substantially increases approval rates while main
 - Matplotlib
 - Jupyter Notebook
 
----
 
 # Repository Structure
 
@@ -222,7 +202,6 @@ credit_risk_scorecard/
 ├── approval_rate_vs_portfolio_bad_rate.png
 ```
 
----
 
 # How to Run
 
@@ -239,7 +218,6 @@ pip install -r requirements.txt
 
 > **Note:** The notebook uses explicit `gc.collect()` and `del` statements throughout for memory management. These cells should not be skipped.
 
----
 
 # Disclaimer
 
