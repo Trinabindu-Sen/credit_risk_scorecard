@@ -50,7 +50,8 @@ Validation Insight: The KS of 21.92 confirms the model achieves meaningful, stab
 
 Business Results: Score Band Analysis
 
-![Score Band ](Score Band Table.png)
+![Score Band Table](Score Band Table.png)
+
 
 The scored test portfolio (Average Score: 493, Range: 365–621) was segmented into score bands to translate model output into actionable credit policy:
 
