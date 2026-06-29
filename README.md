@@ -135,7 +135,7 @@ The underlying portfolio default rate shifted from **20.16%** in the training pe
 | Metric | Value |
 |--------|------:|
 | ROC-AUC | **64.99%** |
-| Gini Coefficient | **29.98%%** |
+| Gini Coefficient | **29.98%** |
 | KS Statistic | **21.92** |
 
 The **KS Statistic of 21.92** confirms that the model achieves meaningful separation between good and bad borrowers on unseen future data.
