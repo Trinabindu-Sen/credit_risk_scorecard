@@ -1,151 +1,248 @@
 # credit_risk_scorecard
 Credit Risk Scorecard built using Python and Logistic Regression.
-Project Overview
+# Consumer Credit Risk Scorecard Pipeline
 
-This project develops an end-to-end Probability of Default (PD) scorecard using over 2.26 million historical LendingClub loan records. The objective is to build an interpretable, institution-grade credit risk model following traditional retail banking methodology.
-The entire pipeline was implemented from scratch in Python, including a custom Weight of Evidence (WoE) transformation engine, Information Value (IV) selection, score scaling, and out-of-time validation, making every modelling decision explicit and auditable.
+An end-to-end **Probability of Default (PD)** scorecard built using **2.26 million LendingClub loan records** following traditional retail banking methodology.
 
-Business Objective
+---
 
-Develop a credit scorecard that estimates the probability of default for loan applicants and translates model predictions into an interpretable, points-based scoring system that supports actionable credit approval decisions.
+## Executive Summary
 
-Dataset
+This project delivers an end-to-end credit risk scorecard pipeline built on **2.26 million historical loan records** from LendingClub. The objective was to build an interpretable, institutionally rigorous **Probability of Default (PD)** model following the same methodology used by retail banks and NBFCs — **Weight of Evidence (WoE) transformation, logistic regression scoring, and strict Out-of-Time (OOT) validation.**
 
-Source: LendingClub Loan Dataset
+The pipeline is built entirely **without high-level AutoML or scorecard libraries**. The WoE/IV engine, imputation logic, and scorecard scaling were implemented from scratch, making every modelling decision explicit, transparent, and auditable.
 
-Initial Records: 2.26 million
+---
 
-Development Dataset: 1.34 million clean, definitive-status loans
+## Project Highlights
 
-Training Period: 2007–2017 (1.29M records)
+- **Dataset:** LendingClub Loan Dataset
+- **Initial Records:** 2.26 Million
+- **Final Development Dataset:** 1.34 Million
+- **Model:** Logistic Regression Scorecard
+- **Validation Strategy:** Chronological Out-of-Time Validation
+- **Score Scaling:** PDO = 20
+- **Score Range:** 365–621
+- **Final Features:** 29 WoE-transformed variables
 
-Out-of-Time Test Period: 2018 (56K records)
+---
 
+# Key Technical Achievements
 
-Methodology & Key Technical Achievements
+## Memory and Infrastructure Engineering
 
-Memory and Infrastructure Engineering: Processed 2.26M raw records on standard consumer hardware using numeric downcasting, category-type conversion, and explicit garbage collection.
+Processed **2.26 million** raw loan records on standard consumer hardware using:
 
-Custom WoE / IV Engine: Built a pure-Python Weight of Evidence and Information Value engine with Laplace smoothing for zero-division edge cases. Screened 150 raw columns down to 29 predictive, non-leaky features.
+- Numeric downcasting
+- Category-type conversion
+- Explicit garbage collection (`gc.collect()`)
+- Memory-aware preprocessing
 
-WoE Monotonicity Audit: Conducted a strict monotonicity audit. 21 features showed clean directional WoE trends.
+The final development dataset retained **1.34 million** clean observations without exceeding memory limitations.
 
-Strict Out-of-Time (OOT) Validation: The dataset was split chronologically rather than randomly. This simulates actual deployment conditions where a model trained on historical data scores future applicants, proving resilience against macroeconomic drift.
+---
 
-Scorecard Scaling: Logistic regression log-odds were converted into an integer points system using the PDO (Points to Double Odds) methodology with PDO = 20, target score = 600 at 50:1 good-to-bad odds.
+## Custom WoE / IV Engine
 
-Model Performance (OOT Test Set)
+Developed a **pure Python Weight of Evidence (WoE)** and **Information Value (IV)** engine from scratch featuring:
 
-Evaluated on the unseen 2018 OOT test set. The underlying default rate shifted significantly from 20.16% in training to 15.76% in the test period.
+- Automatic WoE calculation
+- Information Value calculation
+- Laplace smoothing for zero-frequency bins
+- Automatic variable screening
 
-Metric                                  Value
+The feature selection process reduced **150 raw variables** to **29 predictive, non-leaky features** using an **IV ≥ 0.02** threshold.
 
-ROC-AUC                                 65.08%
+Variables with **IV > 0.50** (primarily settlement and recovery variables) were correctly identified as **post-default leakage** and removed from model development.
 
-Gini Coefficient                        30.16%
+---
 
-KS Statistic                            21.92
+## Strict Out-of-Time Validation
 
-Validation Insight: The KS of 21.92 confirms the model achieves meaningful, stable separation between good and bad borrowers on unseen future data. For a scorecard using only origination-time features (no bureau refresh or behavioural data), this represents an honest, non-leaky baseline consistent with thin-feature retail credit models.
+Rather than performing a random train-test split, the dataset was divided chronologically.
 
-Business Results: Score Band Analysis
+- **Training Dataset:** Loans issued between **2007–2017**
+- **Testing Dataset:** Loans issued during **2018**
 
-![Score Band Table](Score Band Table.png)
+This validation strategy closely replicates production deployment, where a model trained on historical applicants scores future applicants while avoiding temporal leakage.
 
+---
 
-The scored test portfolio (Average Score: 493, Range: 365–621) was segmented into score bands to translate model output into actionable credit policy:
+## Scorecard Scaling
 
-Score Band
+Logistic regression log-odds were converted into an integer scorecard using the industry-standard **Points to Double Odds (PDO)** methodology.
 
-Applicants
+- **PDO:** 20
+- **Target Score:** 600
+- **Target Odds:** 50:1 (Good : Bad)
 
-Bad Rate
+---
 
-Cumul. Approval
+# Methodology
 
-Portfolio Bad Rate
+## Target Definition
 
-545–621
+Ambiguous loan statuses (**Current**, **Late**, **In Grace Period**) were excluded.
 
-650
+Binary target definition:
 
-2.92%
+- **Good (0):** Fully Paid
+- **Bad (1):** Charged Off / Default
 
-1.20%
+Portfolio default rate:
 
-2.92%
+**19.98%**
 
-515–545
+---
 
-8,193
+## Leakage Audit
 
-6.64%
+A systematic leakage audit was performed before modelling.
 
-15.70%
+The following post-origination variables were excluded:
 
-6.37%
+- Recovery amounts
+- Payment history
+- Hardship programme variables
+- Settlement-related variables
 
-485–515
+Additionally, LendingClub's own internal credit ratings (`grade` and `sub_grade`) were removed to prevent the scorecard from simply replicating LendingClub's proprietary underwriting model.
 
-25,625
+---
 
-12.81%
+## Imputation and Standardisation
 
-61.20%
+Missing values were imputed using **training-set medians only**, preventing information leakage into the test dataset.
 
-11.16%
+High-cardinality categorical variables (for example, **emp_title** containing over **39,000 unique categories**) were consolidated into the **100 most frequent categories**.
 
-455–485
+---
 
-19,670
+## WoE Transformation and Feature Selection
 
-22.12%
+A custom Weight of Evidence transformation engine was applied to every predictor.
 
-96.10%
+Feature selection retained variables with:
 
-15.14%
+**Information Value (IV) ≥ 0.02**
 
-Below 455
+The final scorecard contains **29 predictive variables**.
 
-2,180
+### WoE Monotonicity Audit
 
-31–50%
+A monotonicity audit was performed on all selected variables.
 
-100.00%
+- **21 variables** exhibited clear monotonic WoE behaviour.
+- **8 variables** displayed genuine non-linear risk relationships and were retained with documented business justification.
 
-15.76%
+---
 
-[Insert images/score_bands.png Here]
+# Model Performance
 
-Strategy: A cutoff at score 515 yields a 15.7% approval rate with a 6.37% expected portfolio bad rate — well below the portfolio average. A cutoff at score 485 approves 61.2% of applicants at an 11.16% bad rate.
+Evaluation was performed on the unseen **2018 Out-of-Time test dataset**.
 
-Technologies Used
+The underlying portfolio default rate shifted from **20.16%** in the training period to **15.76%** during the test period.
 
-Python (Pandas, NumPy, SciPy)
+| Metric | Value |
+|--------|------:|
+| ROC-AUC | **65.08%** |
+| Gini Coefficient | **30.16%** |
+| KS Statistic | **21.92** |
 
-Scikit-learn (Logistic Regression, Validation Metrics)
+The **KS Statistic of 21.92** confirms that the model achieves meaningful separation between good and bad borrowers on unseen future data.
 
-Matplotlib & Seaborn (Data Visualization)
+For a logistic regression scorecard built exclusively from origination-time variables (without bureau refresh or behavioural variables), this represents an honest, non-leaky baseline consistent with thin-feature retail credit models.
 
-Jupyter Notebook
+---
 
-Repository Structure
+# Score Distribution
 
-├── 01_problem_and_target_2.ipynb   # Main Pipeline & Analysis
-├── README.md                       # Project Documentation
-├── requirements.txt                # Dependencies
-├── images/                         # Saved visual outputs
-└── data/                           # Place loan.csv here
+![Score Distribution](score_distribution.png)
 
+---
 
-How to Run
+# Business Output: Score Band Analysis
 
-Clone the repository and install dependencies from requirements.txt.
+The scored test portfolio (**Average Score: 493**, **Range: 365–621**) was segmented into score bands to translate model output into actionable credit policy.
 
-Place the LendingClub loan.csv file in the /data directory.
+![Score Band Table](score_band_table.png)
 
-Execute the notebook sequentially, do not skip cells.
+---
 
-Note: The pipeline uses explicit gc.collect() and del blocks throughout. These are required for memory management on standard hardware and must not be skipped.
+# Default Rate by Score Band
 
-Disclaimer: This project was developed as a portfolio demonstration of applied quantitative finance and retail credit risk modelling using publicly available LendingClub data. It is intended for educational and research purposes only.
+![Default Rate by Score Band](default_rate_vs_score_band.png)
+
+---
+
+# Approval Rate vs Portfolio Bad Rate
+
+![Approval Rate vs Portfolio Bad Rate](approval_rate_vs_portfolio_bad_rate.png)
+
+---
+
+## Business Interpretation
+
+The score band analysis demonstrates how the scorecard can support lending decisions.
+
+| Score Cutoff | Approval Rate | Expected Portfolio Bad Rate |
+|--------------|--------------:|----------------------------:|
+| **≥ 515** | **15.7%** | **6.37%** |
+| **≥ 485** | **61.2%** | **11.16%** |
+
+A cutoff score of **515** yields a highly selective approval strategy with a portfolio bad rate significantly below the overall portfolio average.
+
+Reducing the cutoff to **485** substantially increases approval rates while maintaining acceptable portfolio risk, illustrating the trade-off between business growth and credit quality.
+
+---
+
+# Technologies Used
+
+- Python
+- Pandas
+- NumPy
+- Scikit-learn
+- SciPy
+- Matplotlib
+- Jupyter Notebook
+
+---
+
+# Repository Structure
+
+```text
+credit_risk_scorecard/
+
+├── Credit_Risk_Scorecard.ipynb
+├── README.md
+├── requirements.txt
+├── score_distribution.png
+├── score_band_table.png
+├── default_rate_vs_score_band.png
+├── approval_rate_vs_portfolio_bad_rate.png
+```
+
+---
+
+# How to Run
+
+1. Clone the repository.
+2. Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Place the LendingClub `loan.csv` dataset in the project directory.
+
+4. Execute the notebook sequentially from top to bottom.
+
+> **Note:** The notebook uses explicit `gc.collect()` and `del` statements throughout for memory management. These cells should not be skipped.
+
+---
+
+# Disclaimer
+
+This project was developed as a portfolio demonstration of **retail credit risk modelling** using publicly available LendingClub loan data.
+
+The implementation follows traditional institutional credit risk methodology including **Weight of Evidence transformation, Information Value feature selection, Logistic Regression scorecards, PDO score scaling, leakage auditing, WoE monotonicity assessment, and Out-of-Time validation.**
