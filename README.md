@@ -47,8 +47,7 @@ Developed a **pure Python Weight of Evidence (WoE)** and **Information Value (IV
 
 The feature selection process reduced **150 raw variables** to **29 predictive, non-leaky features** using an **IV ≥ 0.02** threshold.
 
-Variables with **IV > 0.50** (primarily settlement and recovery variables) were correctly identified as **post-default leakage** and removed from model development.
-
+Variables with **IV > 0.50** (settlement and recovery-related features) were flagged for investigation. Upon review, these were confirmed to be post-default variables observable only after a borrower had already defaulted, and were excluded from model development to preserve leakage integrity.
 
 ## Strict Out-of-Time Validation
 
@@ -116,12 +115,15 @@ Feature selection retained variables with:
 
 The final scorecard contains **29 predictive variables**.
 
+## Class Imbalance 
+The training dataset contains approximately 80% good loans and 20% bad loans. A **class_weight='balanced'** parameter was applied to the logistic regression to prevent the model from being biased toward predicting the majority class.
+
 ### WoE Monotonicity Audit
 
 A monotonicity audit was performed on all selected variables.
 
 - **21 variables** exhibited clear monotonic WoE behaviour.
-- **8 variables** displayed genuine non-linear risk relationships and were retained with documented business justification.
+- **7 variables** displayed genuine non-linear risk relationships and were retained with documented business justification.
 
 
 # Model Performance
@@ -132,8 +134,8 @@ The underlying portfolio default rate shifted from **20.16%** in the training pe
 
 | Metric | Value |
 |--------|------:|
-| ROC-AUC | **65.08%** |
-| Gini Coefficient | **30.16%** |
+| ROC-AUC | **64.99%** |
+| Gini Coefficient | **29.98%%** |
 | KS Statistic | **21.92** |
 
 The **KS Statistic of 21.92** confirms that the model achieves meaningful separation between good and bad borrowers on unseen future data.
@@ -217,6 +219,33 @@ pip install -r requirements.txt
 4. Execute the notebook sequentially from top to bottom.
 
 > **Note:** The notebook uses explicit `gc.collect()` and `del` statements throughout for memory management. These cells should not be skipped.
+
+# Future Work
+
+- **Ensemble Models:** Extend the pipeline with XGBoost and LightGBM to evaluate 
+  discriminatory power gains over the logistic regression baseline, and assess 
+  the interpretability trade-off using SHAP values.
+
+- **Monotonic Coarse Classing:** Manually merge non-monotonic WoE bins for the 
+  7 flagged variables to produce a fully regulation-compliant scorecard.
+
+- **PSI Monitoring:** Implement Population Stability Index tracking to simulate 
+  monthly model health monitoring as deployed in production environments.
+
+- **Macroeconomic Overlays:** Incorporate external features (unemployment rate, 
+  interest rate environment) to improve stability across economic cycles, 
+  consistent with IFRS 9 forward-looking ECL requirements.
+  
+
+## Contact & Networking
+
+**[Trinabindu Sen]**  
+*Aspiring Quantitative Finance Analyst*
+
+- [LinkedIn Profile](www.linkedin.com/in/trinabindu-sen)
+- [GitHub Profile](https://github.com/Trinabindu-Sen)
+
+*Feel free to reach out via LinkedIn connection request. I am always open to discussing credit risk modelling, quant finance, or collaborative data projects.*
 
 
 # Disclaimer
