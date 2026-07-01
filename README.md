@@ -242,7 +242,7 @@ pip install -r requirements.txt
 **[Trinabindu Sen]**  
 *Aspiring Quantitative Finance Analyst*
 
-- [LinkedIn Profile](www.linkedin.com/in/trinabindu-sen)
+- [LinkedIn Profile](https://www.linkedin.com/in/trinabindu-sen)
 - [GitHub Profile](https://github.com/Trinabindu-Sen)
 
 *Feel free to reach out via LinkedIn connection request. I am always open to discussing credit risk modelling, quant finance, or collaborative data projects.*
